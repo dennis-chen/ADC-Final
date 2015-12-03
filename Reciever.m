@@ -28,7 +28,7 @@ function r = Reciever()
        corrected = signal * exp(-1*2*pi*1i*freqOffset);
     end
 
-signal = readDATFile('usrp_samples.dat');
+signal = readDATFile('rxStaircase.dat');
 freqOffset = findFreqOffset(signal);
 correctedSignal = removeFreqOffset(signal,freqOffset);
 plot(abs(correctedSignal));
