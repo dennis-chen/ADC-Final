@@ -1,5 +1,7 @@
 function r = Reciever()
 
+close all;
+
     function signal = readDATFile(fileName)
         %reads DAT file produced by rx_samples_to_file, returns
         %complex signal as a row vector
@@ -68,7 +70,36 @@ function r = Reciever()
        corrected = signal .* exp(-times*2*pi*1i*freqOffset);
     end
 
-signal = getAndStripUHDSignal('squareWaveWithImag.dat');
+    function [freqOffsets, corrected] = removeFreqOffsetChunked(signal,chunkNum)
+       %splits signal into chunkNum of chunks, corrects phase offset in 
+       %each of them and then stitches them back together.
+       corrected = zeros(length(signal));
+       freqOffsets = zeros(chunkNum);
+       chunkSize = floor(length(signal)/chunkNum);
+       j = 1;
+       for i = 1:chunkSize:length(signal)
+           if(i+chunkSize > length(signal))
+            chunk = signal(i:end);
+           else
+            chunk = signal(i:i+chunkSize);    
+           end
+           [yI, yQ, freqOffset] = bpsk_timing_sync(real(chunk), imag(chunk));
+           chunkCorrected = yQ + yI;
+           plotComplex(chunkCorrected);
+           freqOffsets(j) = freqOffset; 
+           j = j+1;
+           if(i+chunkSize > length(signal))
+            corrected(i:end) = chunkCorrected;
+           else
+            corrected(i:i+chunkSize) = chunkCorrected;
+           end
+       end
+    end
+
+%signal = getAndStripUHDSignal('longRealSquareWave.dat');
+signal = stripZeros(readDATFile('longRealSquareWave.dat'));
+%plot(real(signal1));
+%plot(real(signal));
 
 %Siddhartan's timing sync code
 [yI, yQ, siddFreqOffset]  = bpsk_timing_sync(real(signal), imag(signal));
@@ -76,8 +107,8 @@ plotComplex(yI+1j*yQ);
 disp(siddFreqOffset);
 
 %Our timing sync code
-[freqOffset, correctedSignal] = removeFreqOffset(signal);
-plotComplex(correctedSignal);
-disp(freqOffset);
+%[freqOffsets, correctedSignal] = removeFreqOffsetChunked(signal,4);
+%plotComplex(correctedSignal);
+%disp(freqOffsets);
 
 end

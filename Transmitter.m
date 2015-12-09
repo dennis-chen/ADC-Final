@@ -27,55 +27,64 @@ function r = Transmitter()
        img = rgb2gray(imread(fileName));
     end
 
-    function bits = byteToBitVector(bytes)
+    function bits = byteToBit(bytes)
         bits = zeros(length(bytes)*8,1);
         for i = 1:length(bytes)
            bits(8*(i-1)+1:8*(i-1)+8) = de2bi(bytes(i),8); 
         end
     end
 
+    function bytes = bitToByte(bits)
+        bytes = zeros(length(bits)/8,1);
+        for i = 1:length(bytes)
+           bytes(i) = bi2de(bits(8*(i-1)+1:8*(i-1)+8)');
+        end
+    end
+
     function imageBits = imageToBitVector(fileName)
        %returns image file as a bit vector (column).
-       %the image is reshaped by concatenating rows, ex. the first 16
+       %the image is reshaped by concatenating columns, ex. the first 16
        %elements of the vector will represent byte vals of the first 2 
        %pixels in the top ROW of the image.
        img = getGreyscale(fileName);
-       bytes = reshape(img.',1,[]);
-       imageBits = byteToBitVector(bytes);
+       bytes = reshape(img,1,[]);
+       imageBits = byteToBit(bytes);
     end
 
-    function img = bitVectorToImage(bits,shape)
+    function img = bitsToImage(bits,shape)
        %takes bit vector and image shape (ex) [400 400] for a 400 by 400
        %pixel image, and creates the image.
-       
-       %TODO: IMPLEMENT ME
+       bytes = bitToByte(bits);
+       img = reshape(bytes,shape(0),shape(1));
     end
 
     function stringBits = stringToBitVector(string)
        %converts a string to a bit vector array (column). Unicode
        %chars, so each letter is a byte.
        bytes = uint8(string); %the char function will convert back
-       stringBits = byteToBitVector(bytes);
+       stringBits = byteToBit(bytes);
     end
 
-    function string = bitVectorToString(bits)
+    function string = bitsToString(bits)
         %converts a bit vector into a string
-        
-        %TODO: IMPLEMENT ME
+        bytes = bitToByte(bits);
+        string = char(bytes');
     end
 
     function encoded = encodeBits(bits,amplitude)
        %converts bit array of ones and zeros to bit array of +V and -V
        %where V is the amplitude specified.
-       signal = bits;
-       signal(signal == 0) = -1;
-       signal = signal * amplitude;
+       encoded = bits(:);
+       encoded(encoded == 0) = -1;
+       encoded = encoded * amplitude;
     end
 
     function bits = decodeSignal(signal)
        %converts signal to bits with the assumption
        %that signal is entirely real and that > 0 = 1 and < 0 = 0
-       
+       bits = signal(:);
+       bits(bits >= 0) = 1;
+       bits(bits < 0) = 0;
     end
 
     function void = transmitImage(fileName)
@@ -95,14 +104,28 @@ function r = Transmitter()
     function void = testImgEncodeDecode(fileName)
        %encodes to and decodes from bit vector in order
        %to test img encoding functions.
+       SIGNAL_AMP = 50;
+       originalImg = getGreyScale(fileName);
+       imgBits = imageToBitVector(originalImg);
+       encoded = encodeBits(imgBits,SIGNAL_AMP);
+       decoded = decodeSignal(encoded);
+       %IMPLEMENT ME
     end
 
     function void = testStringEncodeDecode(string)
        %encodes to and decodes from bit vector in order
        %to test string encoding functions.
+       SIGNAL_AMP = 50;
+       stringBits = stringToBitVector(string);
+       encoded = encodeBits(stringBits,SIGNAL_AMP);
+       decoded = decodeSignal(encoded);
+       string = bitsToString(decoded);
+       disp(string);
     end
 
+    %testImgEncodeDecode('sidhartan.jpg');
+    testStringEncodeDecode('abcdefghijklmnopqrstuvwxyz');
     %transmitImage('sidhartan.jpg');
-    transmitString('hello');
+    %transmitString('hello');
     
 end
