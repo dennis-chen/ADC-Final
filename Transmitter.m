@@ -17,6 +17,7 @@ function r = Transmitter()
        toWrite = zeros(1,2*length(signal));
        toWrite(1:2:end) = realSignal;
        toWrite(2:2:end) = imagSignal;
+       plot(toWrite);
        fwrite(file, toWrite, 'float32');
        fclose(file);
     end
@@ -95,7 +96,7 @@ function r = Transmitter()
     end
 
     function void = transmitString(string)
-        SIGNAL_AMP = 50;
+        SIGNAL_AMP = 1;
         stringBits = stringToBitVector(string);
         signal = padSignal(encodeBits(stringBits,SIGNAL_AMP));
         writeToDATFile(signal,'string.dat');
@@ -124,8 +125,8 @@ function r = Transmitter()
     end
 
     %testImgEncodeDecode('sidhartan.jpg');
-    testStringEncodeDecode('abcdefghijklmnopqrstuvwxyz');
+    %testStringEncodeDecode('abcdefghijklmnopqrstuvwxyz');
     %transmitImage('sidhartan.jpg');
-    %transmitString('hello');
+    transmitString('hello');
     
 end
