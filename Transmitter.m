@@ -1,5 +1,7 @@
 function r = Transmitter()
 
+close all;
+
     function padded = padSignal(signal)
         %pads signal vector with 1e5 zeros in the beginning.
         padded = [zeros(1e5,1); signal];
@@ -99,6 +101,7 @@ function r = Transmitter()
         SIGNAL_AMP = 1;
         stringBits = stringToBitVector(string);
         signal = padSignal(encodeBits(stringBits,SIGNAL_AMP));
+        plot(signal);
         writeToDATFile(signal,'string.dat');
     end
 

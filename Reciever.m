@@ -45,8 +45,11 @@ close all;
        subplot(2,1,1);
        plot(real(signal));
        xlabel('Real component');
+       var(real(signal))
+       var(imag(signal))
        subplot(2,1,2);
        plot(imag(signal));
+       
        xlabel('Imaginary component');
     end
 
@@ -55,9 +58,10 @@ close all;
        %the frequency offset between reciever and transmitter
        %returns value between (-pi/2 and pi/2)
        f = fftshift(fft(signal.^2));
-       frequencies = linspace(-1,1,length(f));
-       [foo, maxFreqIndex] = max(f);
-       freqOffset = frequencies(maxFreqIndex)/4;
+       frequencies = linspace(-1, 1, length(f));
+%        plot(frequencies,f);
+       [foo, maxFreqIndex] = max(abs(f));
+       freqOffset = frequencies(maxFreqIndex)/2;
     end
 
     function [freqOffset, corrected] = removeFreqOffset(signal)
@@ -67,13 +71,14 @@ close all;
        %the duration of the signal
        freqOffset = findFreqOffset(signal);
        times = (0:length(signal)-1)';
-       corrected = signal .* exp(-times*2*pi*1i*freqOffset);
+       corrected = signal .* exp(-times*1i*pi*freqOffset);
+       
     end
 
     function [freqOffsets, corrected] = removeFreqOffsetChunked(signal,chunkNum)
        %splits signal into chunkNum of chunks, corrects phase offset in 
        %each of them and then stitches them back together.
-       corrected = zeros(length(signal));
+       corrected = zeros(length(signal), 1);
        freqOffsets = zeros(chunkNum);
        chunkSize = floor(length(signal)/chunkNum);
        j = 1;
@@ -83,9 +88,8 @@ close all;
            else
             chunk = signal(i:i+chunkSize);    
            end
-           [yI, yQ, freqOffset] = bpsk_timing_sync(real(chunk), imag(chunk));
-           chunkCorrected = yQ + yI;
-           plotComplex(chunkCorrected);
+           [freqOffset, chunkCorrected] = removeFreqOffset(chunk);
+           %plotComplex(chunkCorrected);
            freqOffsets(j) = freqOffset; 
            j = j+1;
            if(i+chunkSize > length(signal))
@@ -98,17 +102,17 @@ close all;
 
 %signal = getAndStripUHDSignal('longRealSquareWave.dat');
 signal = stripZeros(readDATFile('longRealSquareWave.dat'));
-%plot(real(signal1));
-%plot(real(signal));
 
 %Siddhartan's timing sync code
-[yI, yQ, siddFreqOffset]  = bpsk_timing_sync(real(signal), imag(signal));
-plotComplex(yI+1j*yQ);
-disp(siddFreqOffset);
+% [yI, yQ, siddFreqOffset]  = bpsk_timing_sync(real(signal), imag(signal));
+% plotComplex(yI+1j*yQ);
+% disp(siddFreqOffset);
+% var(yQ);
 
 %Our timing sync code
-%[freqOffsets, correctedSignal] = removeFreqOffsetChunked(signal,4);
-%plotComplex(correctedSignal);
-%disp(freqOffsets);
+[freqOffsets, correctedSignal] = removeFreqOffsetChunked(signal,4);
+plotComplex(correctedSignal);
+disp(freqOffset);
+var(imag(correctedSignal));
 
 end
