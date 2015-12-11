@@ -75,13 +75,12 @@ close all;
        
     end
 
-    function [freqOffsets, corrected, actual] = removeFreqOffsetChunked(signal,chunkNum)
-       %splits signal into chunkNum of chunks, corrects phase offset in 
+    function [freqOffsets, corrected, actual] = removeFreqOffsetChunkSized(signal,chunkSize)
+       %splits signal into chunks of chunkSize, corrects phase offset in 
        %each of them and then stitches them back together.
        corrected = zeros(length(signal), 1);
        actual = zeros(length(signal), 1);
-       freqOffsets = zeros(chunkNum);
-       chunkSize = floor(length(signal)/chunkNum);
+       freqOffsets = [];
        j = 1;
        for i = 1:chunkSize:length(signal)
            if(i+chunkSize > length(signal))
@@ -101,6 +100,13 @@ close all;
             actual(i:i+chunkSize) = chunkActual;
            end
        end
+    end
+
+    function [freqOffsets, corrected, actual] = removeFreqOffsetChunkNum(signal,chunkNum)
+       %splits signal into chunkNum of chunks, corrects phase offset in 
+       %each of them and then stitches them back together.
+       chunkSize = floor(length(signal)/chunkNum);
+       [freqOffsets, corrected, actual] = removeFreqOffsetChunkSized(signal,chunkSize);
     end
    
     function actualSig = findActualSignal(signal)
@@ -138,9 +144,10 @@ close all;
 % plotComplex(yI+1j*yQ);
 
 %Our timing sync code
-signal = stripZeros(readDATFile('longRealSquareWave.dat'));
-[freqOffsets, correctedSignal, actual] = removeFreqOffsetChunked(signal,4);
+signal = stripZeros(readDATFile('helloWorld.dat'));
+[freqOffsets, correctedSignal, actual] = removeFreqOffsetChunkSized(signal,500);
+%plotComplex(correctedSignal);
 plot(actual);
-sigToBits(actual,50,100)
+sigToBits(actual,25,50)
 
 end
