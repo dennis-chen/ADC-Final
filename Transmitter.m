@@ -68,6 +68,18 @@ close all;
        stringBits = byteToBit(bytes);
     end
 
+    function actual_sig = find_actual_signal(signal)
+        %Takes a signal and a checkbit and returns the signal at right
+        %phase
+        if(car(real(signal)) > var(imag(signal)))
+            actual_sig = real(signal);
+        else
+            actual_sig = imag(signal);
+        end              
+    
+    end
+
+
     function string = bitsToString(bits)
         %converts a bit vector into a string
         bytes = bitToByte(bits);
