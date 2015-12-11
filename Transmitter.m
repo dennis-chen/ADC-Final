@@ -146,7 +146,6 @@ close all;
     %transmitImage('sidhartan.jpg');
     %transmitString('hello');
     encoded = encodeBits(stringToBitVector('hello'),5)
-    raisedCos = raisedCosineIR(
     pulsed = convPulse(encoded,ones(200,1));
     plot(pulsed);
 end

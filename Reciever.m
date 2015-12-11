@@ -144,10 +144,13 @@ close all;
 % plotComplex(yI+1j*yQ);
 
 %Our timing sync code
-signal = stripZeros(readDATFile('helloWorld.dat'));
-[freqOffsets, correctedSignal, actual] = removeFreqOffsetChunkSized(signal,500);
+plotComplex(readDATFile('helloWorld.dat'));
+%signal = stripZeros(readDATFile('helloWorld.dat'));
+%plotComplex(signal);
+%length(signal)
+%[freqOffsets, correctedSignal, actual] = removeFreqOffsetChunkSized(signal,500);
 %plotComplex(correctedSignal);
-plot(actual);
-sigToBits(actual,25,50)
+%plot(actual);
+%sigToBits(actual,25,50)
 
 end
