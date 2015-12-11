@@ -68,18 +68,6 @@ close all;
        stringBits = byteToBit(bytes);
     end
 
-    function actual_sig = find_actual_signal(signal)
-        %Takes a signal and a checkbit and returns the signal at right
-        %phase
-        if(car(real(signal)) > var(imag(signal)))
-            actual_sig = real(signal);
-        else
-            actual_sig = imag(signal);
-        end              
-    
-    end
-
-
     function string = bitsToString(bits)
         %converts a bit vector into a string
         bytes = bitToByte(bits);
@@ -139,14 +127,26 @@ close all;
 
     function pulsed = convPulse(encoded,pulse)
        %Expects vector of +-Vs in encoded.
-       upSampled = upsample(encoded, 
+       upSampled = upsample(encoded, length(pulse));
+       pulsed = conv(upSampled,pulse);
     end
+
+    function h = raisedCosineIR(t, alpha, T)
+        %   siddhartan's function
+        %   returns the impuse response of a raised cosine filter
+        %   t - time indices to evaluate the impulse response at
+        %   alpha - roll-off factor
+        %   T - symbol period
+        h = sinc(t/T).*(cos(pi*alpha*t/T)./(1-4*alpha^2*t.^2/T^2));
+    end
+
 
     %testImgEncodeDecode('sidhartan.jpg');
     %testStringEncodeDecode('abcdefghijklmnopqrstuvwxyz');
     %transmitImage('sidhartan.jpg');
     %transmitString('hello');
-    stringToBitVector('hello')*2-1
-    encodeBits(stringToBitVector('hello'),5)
-    
+    encoded = encodeBits(stringToBitVector('hello'),5)
+    raisedCos = raisedCosineIR(
+    pulsed = convPulse(encoded,ones(200,1));
+    plot(pulsed);
 end
