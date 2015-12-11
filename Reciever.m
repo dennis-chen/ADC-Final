@@ -75,10 +75,11 @@ close all;
        
     end
 
-    function [freqOffsets, corrected] = removeFreqOffsetChunked(signal,chunkNum)
+    function [freqOffsets, corrected, actual] = removeFreqOffsetChunked(signal,chunkNum)
        %splits signal into chunkNum of chunks, corrects phase offset in 
        %each of them and then stitches them back together.
        corrected = zeros(length(signal), 1);
+       actual = zeros(length(signal), 1);
        freqOffsets = zeros(chunkNum);
        chunkSize = floor(length(signal)/chunkNum);
        j = 1;
@@ -89,15 +90,35 @@ close all;
             chunk = signal(i:i+chunkSize);    
            end
            [freqOffset, chunkCorrected] = removeFreqOffset(chunk);
-           %plotComplex(chunkCorrected);
+           chunkActual = findActualSignal(chunkCorrected);
            freqOffsets(j) = freqOffset; 
            j = j+1;
            if(i+chunkSize > length(signal))
             corrected(i:end) = chunkCorrected;
+            actual(i:end) = chunkActual;
            else
             corrected(i:i+chunkSize) = chunkCorrected;
+            actual(i:i+chunkSize) = chunkActual;
            end
        end
+    end
+   
+    function actualSig = findActualSignal(signal)
+        %Takes a signal and returns real or imag portion of it that has
+        %has the greater variance (greater amplitude)
+        if(var(real(signal)) > var(imag(signal)))
+            actualSig = real(signal);
+        else
+            actualSig = imag(signal);
+        end              
+    end
+
+    function bits = sigToBits(signal, sampleStart, sampleRate)
+       %interprets every sampleRate bits of the signal as a bit
+       %starting at the sampleStart index
+       samples = downsample(signal(sampleStart:end),sampleRate);
+       signs = sign(samples);
+       bits = (signs+1)/2;
     end
 
 signal = stripZeros(readDATFile('longRealSquareWave.dat'));
@@ -109,7 +130,9 @@ signal = stripZeros(readDATFile('longRealSquareWave.dat'));
 % var(yQ);
 
 %Our timing sync code
-% [freqOffsets, correctedSignal] = removeFreqOffsetChunked(signal,4);
+[freqOffsets, correctedSignal, actual] = removeFreqOffsetChunked(signal,4);
+plot(actual);
+sigToBits(actual,50,100)
 % plotComplex(correctedSignal);
 % disp(freqOffset);
 % var(imag(correctedSignal));
