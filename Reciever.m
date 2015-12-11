@@ -125,10 +125,11 @@ close all;
         %currently assuming that there will be no error in checkBits
         %May want to increase number of checkBits so we could implement
         %some form of 'voting' system to be resilient to some errors
+        sigBits = signal(length(checkBits)+1:end);
         if(signal(1:length(checkBits)) ~= checkBits) 
-            sig = signal * (-1) -1;
+            sig = sigBits * (-1) + 1;
         else
-            sig = signal;
+            sig = sigBits;
         end   
     end
 
