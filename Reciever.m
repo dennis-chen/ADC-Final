@@ -100,19 +100,19 @@ close all;
        end
     end
 
-signal = stripZeros(readDATFile('longRealSquareWave.dat'));
+% signal = stripZeros(readDATFile('longRealSquareWave.dat'));
 
     function sig = checkPhase(signal, checkBits)
         %currently assuming that there will be no error in checkBits
         %May want to increase number of checkBits so we could implement
         %some form of 'voting' system to be resilient to some errors
+        sigBits = signal(length(checkBits)+1:end);
         if(signal(1:length(checkBits)) ~= checkBits) 
-            sig = signal * (-1) -1;
+            sig = sigBits * (-1) + 1;
         else
-            sig = signal;
+            sig = sigBits;
         end   
     end
-
 %Siddhartan's timing sync code
 % [yI, yQ, siddFreqOffset]  = bpsk_timing_sync(real(signal), imag(signal));
 % plotComplex(yI+1j*yQ);
