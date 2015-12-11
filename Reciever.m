@@ -121,8 +121,6 @@ close all;
        bits = (signs+1)/2;
     end
 
-signal = stripZeros(readDATFile('longRealSquareWave.dat'));
-
     function sig = checkPhase(signal, checkBits)
         %currently assuming that there will be no error in checkBits
         %May want to increase number of checkBits so we could implement
@@ -137,15 +135,11 @@ signal = stripZeros(readDATFile('longRealSquareWave.dat'));
 %Siddhartan's timing sync code
 % [yI, yQ, siddFreqOffset]  = bpsk_timing_sync(real(signal), imag(signal));
 % plotComplex(yI+1j*yQ);
-% disp(siddFreqOffset);
-% var(yQ);
 
 %Our timing sync code
+signal = stripZeros(readDATFile('longRealSquareWave.dat'));
 [freqOffsets, correctedSignal, actual] = removeFreqOffsetChunked(signal,4);
 plot(actual);
 sigToBits(actual,50,100)
-% plotComplex(correctedSignal);
-% disp(freqOffset);
-% var(imag(correctedSignal));
 
 end
