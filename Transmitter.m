@@ -77,9 +77,7 @@ close all;
     function encoded = encodeBits(bits,amplitude)
        %converts bit array of ones and zeros to bit array of +V and -V
        %where V is the amplitude specified.
-       encoded = bits(:);
-       encoded(encoded == 0) = -1;
-       encoded = encoded * amplitude;
+       encoded = (bits*2-1) * amplitude;
     end
 
     function bits = decodeSignal(signal)
@@ -127,9 +125,16 @@ close all;
        disp(string);
     end
 
+    function pulsed = convPulse(encoded,pulse)
+       %Expects vector of +-Vs in encoded.
+       upSampled = upsample(encoded, 
+    end
+
     %testImgEncodeDecode('sidhartan.jpg');
     %testStringEncodeDecode('abcdefghijklmnopqrstuvwxyz');
     %transmitImage('sidhartan.jpg');
-    transmitString('hello');
+    %transmitString('hello');
+    stringToBitVector('hello')*2-1
+    encodeBits(stringToBitVector('hello'),5)
     
 end

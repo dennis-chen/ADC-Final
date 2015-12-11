@@ -100,7 +100,6 @@ close all;
        end
     end
 
-%signal = getAndStripUHDSignal('longRealSquareWave.dat');
 signal = stripZeros(readDATFile('longRealSquareWave.dat'));
 
 %Siddhartan's timing sync code
@@ -110,9 +109,9 @@ signal = stripZeros(readDATFile('longRealSquareWave.dat'));
 % var(yQ);
 
 %Our timing sync code
-[freqOffsets, correctedSignal] = removeFreqOffsetChunked(signal,4);
-plotComplex(correctedSignal);
-disp(freqOffset);
-var(imag(correctedSignal));
+% [freqOffsets, correctedSignal] = removeFreqOffsetChunked(signal,4);
+% plotComplex(correctedSignal);
+% disp(freqOffset);
+% var(imag(correctedSignal));
 
 end
