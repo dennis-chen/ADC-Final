@@ -127,16 +127,18 @@ close all;
        bits = (signs+1)/2;
     end
 
-    function sig = checkPhase(signal, checkBits)
-        %currently assuming that there will be no error in checkBits
-        %May want to increase number of checkBits so we could implement
-        %some form of 'voting' system to be resilient to some errors
-        sigBits = signal(length(checkBits)+1:end);
-        if(signal(1:length(checkBits)) ~= checkBits) 
-            sig = sigBits * (-1) + 1;
-        else
-            sig = sigBits;
-        end   
+    function flipped = flipCheckBits(signal)
+        %for every 10 bits of the signal, the first two are check bits
+        %that we expect to be 1 0
+        flipped = zeros(length(signal),1);
+        for i = 1:10:length(signal)
+           checkBits = signal(i:i+1);
+           if(checkBits == [0; 1])
+               flipped(i:i+9) = not(signal(i:i+9));
+           else
+               flipped(i:i+9) = signal(i:i+9);
+           end
+        end
     end
 
 %Siddhartan's timing sync code
@@ -144,9 +146,22 @@ close all;
 % plotComplex(yI+1j*yQ);
 
 %Our timing sync code
-signal = stripZeros(readDATFile('longRealSquareWave.dat'));
+signal = stripZeros(readDATFile('helloWorld.dat'));
 [freqOffsets, correctedSignal, actual] = removeFreqOffsetChunkSized(signal,500);
 plot(actual);
-sigToBits(actual,25,50)
+recoveredBits = sigToBits(actual,25,50);
+corrected = flipCheckBits(recoveredBits);
+
+bytes = uint8('hello world'); %the char function will convert back
+bits = zeros(length(bytes)*10,1);
+for i = 1:length(bytes)
+    bits(10*(i-1)+1:10*(i-1)+2) = [1, 0];
+    bits(10*(i-1)+3:10*(i-1)+10) = fliplr(de2bi(bytes(i),8)); 
+end
+
+disp(sum(xor(bits,recoveredBits)));
+disp(sum(xor(bits,corrected)));
+disp(length(bits));
+disp([bits corrected]);
 
 end

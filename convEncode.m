@@ -110,16 +110,15 @@ function res = temp()
         [trellis,decoded] = convDecode(encoded, windowSize, genPolys);
         disp('Original msg:');
         disp(msg);
-        %disp(encoded');
+        disp(encoded');
         disp('After encoding and decoding: ');
         disp(decoded);
-        %disp(trellis);
-        disp('Trellis: ');
-        disp(trellis);
+%         disp('Trellis: ');
+%         disp(trellis);
     end
 
     msg = [1,0,1,1,0,0,1,1,1,0,1];
-    genPolys = [[1,1,1];[1,1,0]];
+    genPolys = [[1,1,1];[1,1,0];[1,0,1];[0,0,1]];
     windowSize = 3;
     testConvCode(msg,genPolys,windowSize);
     
