@@ -15,7 +15,7 @@ close all;
     function stripped = stripZeros(signal)
        %removes values beneath threshold at beginning and end of 
        %block
-       THRESHOLD = 50;
+       THRESHOLD = 200;
        SIGNAL_START = 100; %start scanning from after the weird spike
                          %at the beginning of recieved signal
        i = SIGNAL_START;
@@ -146,22 +146,16 @@ close all;
 % plotComplex(yI+1j*yQ);
 
 %Our timing sync code
-signal = stripZeros(readDATFile('helloWorld.dat'));
-[freqOffsets, correctedSignal, actual] = removeFreqOffsetChunkSized(signal,500);
+signal = stripZeros(readDATFile('lessRepeat.dat'));
+
+[freqOffsets, correctedSignal, actual] = removeFreqOffsetChunkSized(signal,2000);
 plot(actual);
-recoveredBits = sigToBits(actual,25,50);
+recoveredBits = sigToBits(actual,12,25); %pulse width of 25, start sampling at index 12 (halfway through the pulse)
 corrected = flipCheckBits(recoveredBits);
 
 bytes = uint8('hello world'); %the char function will convert back
-bits = zeros(length(bytes)*10,1);
-for i = 1:length(bytes)
-    bits(10*(i-1)+1:10*(i-1)+2) = [1, 0];
-    bits(10*(i-1)+3:10*(i-1)+10) = fliplr(de2bi(bytes(i),8)); 
-end
-
 disp(sum(xor(bits,recoveredBits)));
 disp(sum(xor(bits,corrected)));
-disp(length(bits));
-disp([bits corrected]);
+%disp([bits corrected]);
 
 end
