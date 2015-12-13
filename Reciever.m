@@ -15,7 +15,7 @@ close all;
     function stripped = stripZeros(signal)
        %removes values beneath threshold at beginning and end of 
        %block
-       THRESHOLD = 50;
+       THRESHOLD = 200;
        SIGNAL_START = 100; %start scanning from after the weird spike
                          %at the beginning of recieved signal
        i = SIGNAL_START;
@@ -75,13 +75,12 @@ close all;
        
     end
 
-    function [freqOffsets, corrected, actual] = removeFreqOffsetChunked(signal,chunkNum)
-       %splits signal into chunkNum of chunks, corrects phase offset in 
+    function [freqOffsets, corrected, actual] = removeFreqOffsetChunkSized(signal,chunkSize)
+       %splits signal into chunks of chunkSize, corrects phase offset in 
        %each of them and then stitches them back together.
        corrected = zeros(length(signal), 1);
        actual = zeros(length(signal), 1);
-       freqOffsets = zeros(chunkNum);
-       chunkSize = floor(length(signal)/chunkNum);
+       freqOffsets = [];
        j = 1;
        for i = 1:chunkSize:length(signal)
            if(i+chunkSize > length(signal))
@@ -102,6 +101,13 @@ close all;
            end
        end
     end
+
+    function [freqOffsets, corrected, actual] = removeFreqOffsetChunkNum(signal,chunkNum)
+       %splits signal into chunkNum of chunks, corrects phase offset in 
+       %each of them and then stitches them back together.
+       chunkSize = floor(length(signal)/chunkNum);
+       [freqOffsets, corrected, actual] = removeFreqOffsetChunkSized(signal,chunkSize);
+    end
    
     function actualSig = findActualSignal(signal)
         %Takes a signal and returns real or imag portion of it that has
@@ -121,16 +127,18 @@ close all;
        bits = (signs+1)/2;
     end
 
-    function sig = checkPhase(signal, checkBits)
-        %currently assuming that there will be no error in checkBits
-        %May want to increase number of checkBits so we could implement
-        %some form of 'voting' system to be resilient to some errors
-        sigBits = signal(length(checkBits)+1:end);
-        if(signal(1:length(checkBits)) ~= checkBits) 
-            sig = sigBits * (-1) + 1;
-        else
-            sig = sigBits;
-        end   
+    function flipped = flipCheckBits(signal)
+        %for every 10 bits of the signal, the first two are check bits
+        %that we expect to be 1 0
+        flipped = zeros(length(signal),1);
+        for i = 1:10:length(signal)
+           checkBits = signal(i:i+1);
+           if(checkBits == [0; 1])
+               flipped(i:i+9) = not(signal(i:i+9));
+           else
+               flipped(i:i+9) = signal(i:i+9);
+           end
+        end
     end
 
 %Siddhartan's timing sync code
@@ -138,9 +146,16 @@ close all;
 % plotComplex(yI+1j*yQ);
 
 %Our timing sync code
-signal = stripZeros(readDATFile('longRealSquareWave.dat'));
-[freqOffsets, correctedSignal, actual] = removeFreqOffsetChunked(signal,4);
+signal = stripZeros(readDATFile('lessRepeat.dat'));
+
+[freqOffsets, correctedSignal, actual] = removeFreqOffsetChunkSized(signal,2000);
 plot(actual);
-sigToBits(actual,50,100)
+recoveredBits = sigToBits(actual,12,25); %pulse width of 25, start sampling at index 12 (halfway through the pulse)
+corrected = flipCheckBits(recoveredBits);
+
+bytes = uint8('hello world'); %the char function will convert back
+disp(sum(xor(bits,recoveredBits)));
+disp(sum(xor(bits,corrected)));
+%disp([bits corrected]);
 
 end

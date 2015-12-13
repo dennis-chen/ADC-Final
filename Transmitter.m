@@ -140,13 +140,12 @@ close all;
         h = sinc(t/T).*(cos(pi*alpha*t/T)./(1-4*alpha^2*t.^2/T^2));
     end
 
-
+    stringToBitVector('hello world');
     %testImgEncodeDecode('sidhartan.jpg');
     %testStringEncodeDecode('abcdefghijklmnopqrstuvwxyz');
     %transmitImage('sidhartan.jpg');
     %transmitString('hello');
     encoded = encodeBits(stringToBitVector('hello'),5)
-    raisedCos = raisedCosineIR(
     pulsed = convPulse(encoded,ones(200,1));
     plot(pulsed);
 end
