@@ -144,7 +144,6 @@ function h = raisedCosineIR(t, alpha, T)
 end
 
 function res = addCheckBits(vector)
-    length(vector)/8*10
     res = zeros((length(vector)/8)*10,1);
     for i = 1:8:length(vector)
        res(10*(i-1)/8+1:10*(i-1)/8+2) = [1 0];
