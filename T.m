@@ -57,16 +57,24 @@ function imageBits = imageToBitVector(fileName)
    %the image is reshaped by concatenating columns, ex. the first 16
    %elements of the vector will represent byte vals of the first 2 
    %pixels in the top ROW of the image.
-   img = getGreyscale(fileName);
+   %img = T.getGreyscale(fileName);
+   img = imread(fileName);
    bytes = reshape(img,1,[]);
-   imageBits = byteToBit(bytes);
+   imageBits = T.byteToBit(bytes);
 end
 
+function bytes = bitToByte(bits)
+    bytes = zeros(length(bits)/8,1);
+    for i = 1:length(bytes)
+       bytes(i) = bi2de(bits(8*(i-1)+1:8*(i-1)+8)','left-msb');
+    end
+end
+    
 function img = bitsToImage(bits,shape)
    %takes bit vector and image shape (ex) [400 400] for a 400 by 400
    %pixel image, and creates the image.
-   bytes = bitToByte(bits);
-   img = reshape(bytes,shape(0),shape(1));
+   bytes = T.bitToByte(bits);
+   img = reshape(bytes,shape(1),shape(2));
 end
 
 function stringBits = stringToBitVector(string)
