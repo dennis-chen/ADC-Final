@@ -1,5 +1,9 @@
-function res = temp()
-
+classdef C
+    properties
+    end
+    
+    methods(Static)
+        
     function encoded = convEncode(bitVec, windowSize, genPolys)
     %bitVec- vector of bits to be encoded, as a row ex [1 0 1 1 ....]
     %windowSize= aka constraint length. genPolys must be same width as window
@@ -34,7 +38,7 @@ function res = temp()
        for i = 1:bitStateCount
           registers = de2bi(i-1,windowSize-1,'left-msb');
           bitShiftedIn = registers(1);
-          prevOne = shiftLeftOne(registers);
+          prevOne = C.shiftLeftOne(registers);
           prevOne(end) = 1;
           prevOneIndex = bi2de(prevOne,'left-msb')+1;
           prevOneIndices(i) = prevOneIndex;
@@ -45,7 +49,7 @@ function res = temp()
           end
           prevOneEmissions(i,:) = prevOneEmit;
           
-          prevZero = shiftLeftOne(registers);
+          prevZero = C.shiftLeftOne(registers);
           prevZeroIndex = bi2de(prevZero,'left-msb')+1;
           prevZeroIndices(i) = prevZeroIndex;
           prevZeroRegs = [bitShiftedIn prevZero];
@@ -72,19 +76,19 @@ function res = temp()
         trellis(:,1) = Inf;
         trellis(1,1) = 0;
         prevNodePath = zeros(bitStateCount,origMsgLen+1); %stores index of node that points to the one in trellis
-        [prevOneIndices,prevZeroIndices,prevOneEmissions,prevZeroEmissions] = getStateMachine(windowSize, genPolys);
+        [prevOneIndices,prevZeroIndices,prevOneEmissions,prevZeroEmissions] = C.getStateMachine(windowSize, genPolys);
         for col = 2:(origMsgLen+1)
            bitsObserved = encodeVec((col-2)*numPolys+1:(col-2)*numPolys+1+(numPolys-1))'; %I'm so sorry
            for row = 1:bitStateCount
                prevOneIndex = prevOneIndices(row);
                onePathMetric = trellis(prevOneIndex,col-1);
                prevOneEmission = prevOneEmissions(row,:);
-               oneDist = hammingDist(bitsObserved,prevOneEmission);
+               oneDist = C.hammingDist(bitsObserved,prevOneEmission);
                
                prevZeroIndex = prevZeroIndices(row);
                zeroPathMetric = trellis(prevZeroIndex,col-1);
                prevZeroEmission = prevZeroEmissions(row,:);
-               zeroDist = hammingDist(bitsObserved,prevZeroEmission);
+               zeroDist = C.hammingDist(bitsObserved,prevZeroEmission);
                
                if(onePathMetric+oneDist > zeroPathMetric+zeroDist)
                    pathMetric = zeroPathMetric+zeroDist;
@@ -106,8 +110,8 @@ function res = temp()
     end
 
     function res = testConvCode(msg, genPolys, windowSize)
-        encoded = convEncode(msg, windowSize, genPolys);
-        [trellis,decoded] = convDecode(encoded, windowSize, genPolys);
+        encoded = C.convEncode(msg, windowSize, genPolys);
+        [trellis,decoded] = C.convDecode(encoded, windowSize, genPolys);
         disp('Original msg:');
         disp(msg);
         disp(encoded');
@@ -116,14 +120,6 @@ function res = temp()
 %         disp('Trellis: ');
 %         disp(trellis);
     end
-
-    msg = [1,0,1,1,0,0,1,1,1,0,1];
-    genPolys = [[1,1,1];[1,1,0];[1,0,1];[0,0,1]];
-    windowSize = 3;
-    testConvCode(msg,genPolys,windowSize);
     
-    genPolys = [[1,1,0,1];[1,1,1,0]];
-    windowSize = 4;
-    testConvCode(msg,genPolys,windowSize);
-
+    end
 end
