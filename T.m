@@ -1,7 +1,4 @@
 classdef T 
-    properties
-    end
-    
     methods(Static)
         
 function padded = padSignal(signal)
@@ -9,7 +6,32 @@ function padded = padSignal(signal)
     padded = [zeros(1e5,1); signal; zeros(1e5,1)];
 end
 
+function packetized = packetizeSignal(signal, packet_size, zero_no)
+    %given a packet size, breaks up the signal into the appropriate number
+    %of packets with the number of zeros between packets supplied by
+    %zero_no
+    packet_no = ceil(length(signal)/packet_size);
+    disp('Number of packets ');
+    disp(packet_no);
+    packetized = zeros(length(signal) + packet_no*zero_no, 1);
+    for i=1:packet_no
+        start = (i-1)*length(signal)/packet_no +1;
+        finish = i*length(signal)/packet_no;
+        disp('PACKET SIZE '); 
+        if finish >length(signal)
+            x = [signal(start:end); zeros(finish-length(signal)+zero_no, 1)];
+            disp(length(x)-zero_no);
+        else 
+            x = [signal(start:finish); zeros(zero_no, 1)];
+            disp(length(x)-zero_no);
+        end
+        packetized((i-1)*(length(signal)/packet_no+zero_no)+1:i*length(signal)/packet_no+zero_no*i) = x;
+    end
+end
+
 function datFormat = signalToDATFormat(signal)
+    %write the signal out in the dat format that we exepct where every odd
+    %element is the real part and every even element is the imaginary part
    realSignal = real(signal);
    imagSignal = imag(signal);
    datFormat = zeros(2*length(signal),1);
@@ -41,11 +63,13 @@ end
 
 function img = getGreyscale(fileName)
    %returns matrix w/ byte vals from 0 to 255 representing
-   %grayscale values of image stored in file.
+   %grayscale values of image stored in file
    img = rgb2gray(imread(fileName));
 end
 
 function bits = byteToBit(bytes)
+    %takes in a vector of bytes, converts each byte to a vector of bits to
+    %return a bit vector
     bits = zeros(length(bytes)*8,1);
     for i = 1:length(bytes)
        bits(8*(i-1)+1:8*(i-1)+8) = de2bi(bytes(i),8,'left-msb'); 
@@ -56,8 +80,7 @@ function imageBits = imageToBitVector(fileName)
    %returns image file as a bit vector (column).
    %the image is reshaped by concatenating columns, ex. the first 16
    %elements of the vector will represent byte vals of the first 2 
-   %pixels in the top ROW of the image.
-   %img = T.getGreyscale(fileName);
+   %pixels in the top ROW of the image. Assumes image is grayscale alredy
    img = imread(fileName);
    bytes = reshape(img,1,[]);
    imageBits = T.byteToBit(bytes);
@@ -99,6 +122,8 @@ function bits = decodeSignal(signal)
 end
 
 function void = transmitImage(fileName)
+    %test function to determine if converting image to bits, padding, and
+    %wrtiing to dat file was working
     SIGNAL_AMP = 50;
     imgBits = imageToBitVector(fileName);
     signal = padSignal(encodeBits(imgBits,SIGNAL_AMP));
@@ -106,6 +131,8 @@ function void = transmitImage(fileName)
 end
 
 function void = transmitString(string)
+    %test function to determine if converting string to bits, padding, and
+    %wrtiing to dat file was working
     SIGNAL_AMP = 1;
     stringBits = stringToBitVector(string);
     signal = padSignal(encodeBits(stringBits,SIGNAL_AMP));
@@ -121,7 +148,6 @@ function void = testImgEncodeDecode(fileName)
    imgBits = imageToBitVector(originalImg);
    encoded = encodeBits(imgBits,SIGNAL_AMP);
    decoded = decodeSignal(encoded);
-   %IMPLEMENT ME
 end
 
 function void = testStringEncodeDecode(string)
@@ -142,16 +168,9 @@ function pulsed = convPulse(encoded,pulse)
    pulsed = pulsed(1:length(encoded)*length(pulse));
 end
 
-function h = raisedCosineIR(t, alpha, T)
-    %   siddhartan's function
-    %   returns the impuse response of a raised cosine filter
-    %   t - time indices to evaluate the impulse response at
-    %   alpha - roll-off factor
-    %   T - symbol period
-    h = sinc(t/T).*(cos(pi*alpha*t/T)./(1-4*alpha^2*t.^2/T^2));
-end
-
 function res = addCheckBits(vector)
+    disp('Number of bits in total ');
+    disp(length(vector)/8*10)
     res = zeros((length(vector)/8)*10,1);
     for i = 1:8:length(vector)
        res(10*(i-1)/8+1:10*(i-1)/8+2) = [1 0];
@@ -159,16 +178,6 @@ function res = addCheckBits(vector)
     end
 end
 
-function res = temp()
-%     stringToBitVector('hello world');
-%testImgEncodeDecode('sidhartan.jpg');
-testStringEncodeDecode('abcdefghijklmnopqrstuvwxyz');
-%transmitImage('sidhartan.jpg');
-%transmitString('hello');
-%     encoded = encodeBits(stringToBitVector('hello'),5)
-%     pulsed = convPulse(encoded,ones(200,1));
-%     plot(pulsed); 
-end
 
     end
 end
