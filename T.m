@@ -1,6 +1,4 @@
 classdef T 
-    properties
-    end
     
     methods(Static)
         

@@ -55,59 +55,6 @@ classdef R
         strippedSignal = R.stripZeros(signalWithoutInitialPeak);
     end
     
-    function packets = getPacketsOld(signal)
-        %takes signal, interprets consecutive zero values as end of packet
-        %Breaks the signal up into packets
-        %it returns as a cell array
-        packets = {};
-        packetIndex = 1;
-        posEdgeIndex = 1;
-        THRESHOLD = max(abs(signal))/4;
-        for i = 2:length(signal)
-            if(abs(signal(i)) > THRESHOLD && abs(signal(i-1)) < THRESHOLD)
-                posEdgeIndex = i;
-            elseif((abs(signal(i)) < THRESHOLD && abs(signal(i-1)) > THRESHOLD) || (i == length(signal)))
-                negEdgeIndex = i;
-                packets{packetIndex} = signal(posEdgeIndex:negEdgeIndex);
-                packetIndex = packetIndex + 1;
-            end
-        end
-    end
-    
-    function packets = getPackets(signal)
-        %takes signal, interprets consecutive zero values as end of packet
-        %Breaks the signal up into packets and returns as a cell array
-        packets = {};
-        packetIndex = 1;
-        ZERO_LEN = 9e5;
-        absReal = abs(real(signal));
-        THRESHOLD = max(absReal)/2;
-        consecutiveZeros = 0;
-        posEdgeIndex = 1;
-        posEdgeSet = true;
-        for i = 2:length(signal)
-           if(absReal(i) < THRESHOLD)
-              consecutiveZeros = consecutiveZeros + 1; 
-           else
-              consecutiveZeros = 0;
-           end
-           
-           if(absReal(i) > THRESHOLD && absReal(i-1) < THRESHOLD)
-              if(~posEdgeSet)
-                posEdgeIndex = i;
-                posEdgeSet = true;
-              end
-           end
-           
-           if(consecutiveZeros >= ZERO_LEN || i == length(signal))
-              packets{packetIndex} = signal(posEdgeIndex:i);
-              packetIndex = packetIndex + 1;
-              consecutiveZeros = 0;
-              posEdgeSet = false;
-           end
-        end
-    end
-    
     function [packets, chunks] = getPacketNum(signal, packetNum)
         %assumes signal is already stripped of zeros on either side
         packets = {};
@@ -245,14 +192,6 @@ classdef R
         %converts a bit vector into a string
         bytes = R.bitToByte(bits);
         string = char(bytes');
-    end
-
-    function void = printErrRate(recovered,original)
-        disp('Err rate: ');
-        disp(wrongBitCount/totalBits);
-        wrongBitCount = sum(xor(recovered,original));
-        totalBits = length(original);
-        %disp([bits corrected]);
     end
     
     function packet = cutOrPadPacket(packet,packetSize)

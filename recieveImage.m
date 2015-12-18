@@ -1,7 +1,7 @@
 close all;
 clear;
 
-signal = R.stripZeros(R.readDATFile('demoFace6.dat'));
+signal = R.stripZeros(R.readDATFile('demo.dat'));
 [packets, c] = R.getPacketNum(signal, 8);
     
 allBits = [];

@@ -1,6 +1,4 @@
 classdef C
-    properties
-    end
     
     methods(Static)
         
@@ -109,7 +107,7 @@ classdef C
         end
     end
 
-    function res = testConvCode(msg, genPolys, windowSize)
+    function void = testConvCode(msg, genPolys, windowSize)
         encoded = C.convEncode(msg, windowSize, genPolys);
         [trellis,decoded] = C.convDecode(encoded, windowSize, genPolys);
         disp('Original msg:');
